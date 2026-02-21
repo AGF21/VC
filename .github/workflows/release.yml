@@ -61,9 +61,9 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install "setuptools<73"
+          pip install "setuptools<73" wheel
           pip install pyinstaller
-          pip install -r backend/requirements.txt
+          pip install --no-build-isolation -r backend/requirements.txt
 
       - name: Install MLX dependencies (Apple Silicon only)
         if: matrix.backend == 'mlx'
