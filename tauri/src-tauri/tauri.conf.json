@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Voicebox",
+  "productName": "PunsAI",
   "version": "0.1.14",
   "identifier": "sh.voicebox.app",
   "build": {

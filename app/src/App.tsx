@@ -153,7 +153,7 @@ function App() {
             <span
               style={{ fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif', color: 'white', fontSize: '5rem', letterSpacing: '0.05em' }}
               className="animate-fade-in-scale relative z-10"
-            >zest</span>
+            >Z</span>
           </div>
           <div className="animate-fade-in-delayed">
             <ShinyText
