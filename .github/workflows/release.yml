@@ -61,7 +61,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install "setuptools<73" wheel
+          pip install "setuptools<73" wheel numpy
           pip install pyinstaller
           pip install --no-build-isolation -r backend/requirements.txt
 
