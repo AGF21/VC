@@ -62,7 +62,6 @@ def build_server():
         '--hidden-import', 'qwen_tts.inference.qwen3_tts_tokenizer',
         '--hidden-import', 'qwen_tts.core',
         '--hidden-import', 'qwen_tts.cli',
-        '--copy-metadata', 'qwen-tts',
         '--collect-submodules', 'qwen_tts',
         '--collect-data', 'qwen_tts',
         # Fix for pkg_resources and jaraco namespace packages

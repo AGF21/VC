@@ -41,7 +41,7 @@ export function useAutoUpdater(checkOnMount = false) {
       checkForUpdates();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [platform.metadata.isTauricheckOnMountcheckForUpdates]);
+  }, [platform.metadata.isTauri, checkOnMount, checkForUpdates]);
 
   return {
     status,
