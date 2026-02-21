@@ -12,16 +12,8 @@ export function ServerTab() {
         <ServerStatus />
       </div>
       {platform.metadata.isTauri && <UpdateStatus />}
-      <div className="py-8 text-center text-sm text-muted-foreground">
-        Created by{' '}
-        <a
-          href="https://github.com/jamiepine"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-accent hover:underline"
-        >
-          Jamie Pine
-        </a>
+      <div className="py-8 text-center">
+        <span style={{ fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif', color: 'white', fontSize: '1.25rem', letterSpacing: '0.05em' }}>Zest Tech</span>
       </div>
     </div>
   );
