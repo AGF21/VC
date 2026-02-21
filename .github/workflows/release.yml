@@ -48,9 +48,9 @@ jobs:
       - name: Install LLVM (macOS)
         if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-15-intel'
         run: |
-          brew install llvm@20
-          echo "$(brew --prefix llvm@20)/bin" >> $GITHUB_PATH
-          echo "LLVM_CONFIG=$(brew --prefix llvm@20)/bin/llvm-config" >> $GITHUB_ENV
+          brew install llvm
+          echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+          echo "LLVM_CONFIG=$(brew --prefix llvm)/bin/llvm-config" >> $GITHUB_ENV
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -136,24 +136,17 @@ jobs:
           SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           SIGNING_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
+          KEY_FILE="$RUNNER_TEMP/tauri-signing.key"
           if [ -n "$SIGNING_KEY" ]; then
             echo "Using provided TAURI_SIGNING_PRIVATE_KEY"
-            {
-              printf 'TAURI_SIGNING_PRIVATE_KEY<<KEYEOF\n'
-              printf '%s\n' "$SIGNING_KEY"
-              printf 'KEYEOF\n'
-            } >> "$GITHUB_ENV"
+            printf '%s' "$SIGNING_KEY" > "$KEY_FILE"
+            echo "TAURI_SIGNING_PRIVATE_KEY=$KEY_FILE" >> "$GITHUB_ENV"
             echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=$SIGNING_KEY_PASSWORD" >> "$GITHUB_ENV"
           else
             echo "No signing key found – generating temporary key for CI build"
-            cd tauri && bun run tauri signer generate --ci -p "ci-temp" -w "$RUNNER_TEMP/voicebox.key" -f
-            {
-              printf 'TAURI_SIGNING_PRIVATE_KEY<<KEYEOF\n'
-              cat "$RUNNER_TEMP/voicebox.key"
-              printf 'KEYEOF\n'
-            } >> "$GITHUB_ENV"
+            cd tauri && bun run tauri signer generate -p "ci-temp" -w "$KEY_FILE"
+            echo "TAURI_SIGNING_PRIVATE_KEY=$KEY_FILE" >> "$GITHUB_ENV"
             echo 'TAURI_SIGNING_PRIVATE_KEY_PASSWORD=ci-temp' >> "$GITHUB_ENV"
-            rm "$RUNNER_TEMP/voicebox.key"
           fi
 
       - uses: tauri-apps/tauri-action@v0
