@@ -80,14 +80,7 @@ export default function Home() {
             {/* Left side - Content */}
             <div className="space-y-6 lg:pr-8">
               <div className="flex lg:justify-start justify-center mb-6">
-                <Image
-                  src="/voicebox-logo-2.png"
-                  alt="Voicebox Logo"
-                  width={1024}
-                  height={1024}
-                  className="w-32 sm:w-40 md:w-48 h-auto"
-                  priority
-                />
+                <span style={{ fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif', color: 'white', fontSize: '3rem', letterSpacing: '0.05em' }}>zest</span>
               </div>
               <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-tight text-center lg:text-left">
                 Voicebox
