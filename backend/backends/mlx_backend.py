@@ -370,8 +370,8 @@ class MLXTTSBackend:
             else:
                 # Fallback: empty audio
                 audio = np.array([], dtype=np.float32)
-            
-            return audio, sample_rate
+
+            return audio, int(sample_rate)
 
         # Run blocking inference in thread pool
         audio, sample_rate = await asyncio.to_thread(_generate_sync)

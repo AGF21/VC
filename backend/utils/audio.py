@@ -65,18 +65,39 @@ def load_audio(
 
 
 def save_audio(
-    audio: np.ndarray,
+    audio,
     path: str,
     sample_rate: int = 24000,
 ) -> None:
     """
     Save audio file.
-    
+
     Args:
-        audio: Audio array
+        audio: Audio array (numpy, torch.Tensor, or mlx array)
         path: Output path
         sample_rate: Sample rate
     """
+    # Convert torch.Tensor to numpy if needed
+    if not isinstance(audio, np.ndarray):
+        try:
+            import torch
+            if isinstance(audio, torch.Tensor):
+                audio = audio.detach().cpu().float().numpy()
+        except ImportError:
+            pass
+
+    # Convert mlx array or other array-like to numpy
+    if not isinstance(audio, np.ndarray):
+        if hasattr(audio, '__array__'):
+            audio = np.array(audio, dtype=np.float32)
+
+    # Ensure float32 dtype for soundfile compatibility
+    if audio.dtype != np.float32:
+        audio = audio.astype(np.float32)
+
+    # Ensure sample_rate is a plain int (not a tensor or float)
+    sample_rate = int(sample_rate)
+
     sf.write(path, audio, sample_rate)
 
 
