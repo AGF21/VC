@@ -146,13 +146,13 @@ jobs:
             echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=$SIGNING_KEY_PASSWORD" >> "$GITHUB_ENV"
           else
             echo "No signing key found – generating temporary key for CI build"
-            cd tauri && bun run tauri signer generate --ci -p "" -w "$RUNNER_TEMP/voicebox.key" -f
+            cd tauri && bun run tauri signer generate --ci -p "ci-temp" -w "$RUNNER_TEMP/voicebox.key" -f
             {
               printf 'TAURI_SIGNING_PRIVATE_KEY<<KEYEOF\n'
               cat "$RUNNER_TEMP/voicebox.key"
               printf 'KEYEOF\n'
             } >> "$GITHUB_ENV"
-            echo 'TAURI_SIGNING_PRIVATE_KEY_PASSWORD=' >> "$GITHUB_ENV"
+            echo 'TAURI_SIGNING_PRIVATE_KEY_PASSWORD=ci-temp' >> "$GITHUB_ENV"
             rm "$RUNNER_TEMP/voicebox.key"
           fi
 
