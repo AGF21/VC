@@ -1,6 +1,5 @@
 import { RouterProvider } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
-import voiceboxLogo from '@/assets/voicebox-logo.png';
 import ShinyText from '@/components/ShinyText';
 import { TitleBarDragRegion } from '@/components/TitleBarDragRegion';
 import { useAutoUpdater } from '@/hooks/useAutoUpdater';
@@ -151,11 +150,10 @@ function App() {
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-48 h-48 rounded-full bg-accent/20 blur-3xl" />
             </div>
-            <img
-              src={voiceboxLogo}
-              alt="Voicebox"
-              className="w-48 h-48 object-contain animate-fade-in-scale relative z-10"
-            />
+            <span
+              style={{ fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif', color: 'white', fontSize: '5rem', letterSpacing: '0.05em' }}
+              className="animate-fade-in-scale relative z-10"
+            >zest</span>
           </div>
           <div className="animate-fade-in-delayed">
             <ShinyText
