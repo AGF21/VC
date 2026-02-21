@@ -112,7 +112,7 @@ jobs:
         run: bun install
 
       - name: Install Apple API key
-        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-15-intel'
+        if: ${{ (matrix.platform == 'macos-latest' || matrix.platform == 'macos-15-intel') && secrets.APPLE_API_KEY != '' }}
         run: |
           mkdir -p ~/.appstoreconnect/private_keys/
           cd ~/.appstoreconnect/private_keys/
@@ -121,7 +121,7 @@ jobs:
           rm AuthKey_${{ secrets.APPLE_API_KEY }}.p8.base64
 
       - name: Install Codesigning Certificate
-        if: matrix.platform == 'macos-latest' || matrix.platform == 'macos-15-intel'
+        if: ${{ (matrix.platform == 'macos-latest' || matrix.platform == 'macos-15-intel') && secrets.APPLE_CERTIFICATE != '' }}
         uses: apple-actions/import-codesign-certs@v3
         with:
           p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
@@ -141,6 +141,7 @@ jobs:
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
         with:
           projectPath: tauri
+          tauriScript: "bun run tauri"
           tagName: v__VERSION__
           releaseName: "voicebox v__VERSION__"
           releaseBody: |
