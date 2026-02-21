@@ -553,34 +553,24 @@ async def generate_speech(
         # Load the requested model size if different from current (async to not block)
         model_size = data.model_size or "1.7B"
 
-        # Check if model needs to be downloaded first
-        model_path = tts_model._get_model_path(model_size)
-        if model_path.startswith("Qwen/"):
-            # Model not cached - check if it exists remotely or needs download
-            from huggingface_hub import constants as hf_constants
-            repo_cache = Path(hf_constants.HF_HUB_CACHE) / ("models--" + model_path.replace("/", "--"))
-            if not repo_cache.exists():
-                # Start download in background
-                model_name = f"qwen-tts-{model_size}"
+        # Check if model needs to be downloaded first (works for both PyTorch and MLX)
+        if not tts_model.is_loaded() and hasattr(tts_model, '_is_model_cached') and not tts_model._is_model_cached(model_size):
+            model_name = f"qwen-tts-{model_size}"
 
-                async def download_model_background():
-                    try:
-                        await tts_model.load_model_async(model_size)
-                    except Exception as e:
-                        task_manager.error_download(model_name, str(e))
+            async def download_model_background():
+                try:
+                    await tts_model.load_model_async(model_size)
+                except Exception as e:
+                    task_manager.error_download(model_name, str(e))
 
-                task_manager.start_download(model_name)
-                asyncio.create_task(download_model_background())
+            task_manager.start_download(model_name)
+            asyncio.create_task(download_model_background())
 
-                # Return 202 Accepted with download info
-                raise HTTPException(
-                    status_code=202,
-                    detail={
-                        "message": f"Model {model_size} is being downloaded. Please wait and try again.",
-                        "model_name": model_name,
-                        "downloading": True
-                    }
-                )
+            # Return error telling user model is downloading
+            raise HTTPException(
+                status_code=503,
+                detail=f"Model {model_size} is being downloaded. Please wait for the download to complete and try again.",
+            )
 
         await tts_model.load_model_async(model_size)
         audio, sample_rate = await tts_model.generate(
@@ -617,6 +607,9 @@ async def generate_speech(
         
         return generation
         
+    except HTTPException:
+        task_manager.complete_generation(generation_id)
+        raise
     except ValueError as e:
         task_manager.complete_generation(generation_id)
         raise HTTPException(status_code=400, detail=str(e))
@@ -815,16 +808,10 @@ async def transcribe_audio(
         
         # Transcribe
         whisper_model = transcribe.get_whisper_model()
-
-        # Check if Whisper model is downloaded (uses default size "base")
         model_size = whisper_model.model_size
-        model_name = f"openai/whisper-{model_size}"
 
-        # Check if model is cached
-        from huggingface_hub import constants as hf_constants
-        repo_cache = Path(hf_constants.HF_HUB_CACHE) / ("models--" + model_name.replace("/", "--"))
-        if not repo_cache.exists():
-            # Start download in background
+        # Check if Whisper model needs to be downloaded first
+        if not whisper_model.is_loaded() and hasattr(whisper_model, '_is_model_cached') and not whisper_model._is_model_cached(model_size):
             progress_model_name = f"whisper-{model_size}"
 
             async def download_whisper_background():
@@ -836,14 +823,9 @@ async def transcribe_audio(
             get_task_manager().start_download(progress_model_name)
             asyncio.create_task(download_whisper_background())
 
-            # Return 202 Accepted
             raise HTTPException(
-                status_code=202,
-                detail={
-                    "message": f"Whisper model {model_size} is being downloaded. Please wait and try again.",
-                    "model_name": progress_model_name,
-                    "downloading": True
-                }
+                status_code=503,
+                detail=f"Whisper model {model_size} is being downloaded. Please wait for the download to complete and try again.",
             )
 
         text = await whisper_model.transcribe(tmp_path, language)
@@ -853,6 +835,8 @@ async def transcribe_audio(
             duration=duration,
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:

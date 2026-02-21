@@ -337,7 +337,15 @@ class PyTorchTTSBackend:
                 voice_clone_prompt=voice_prompt,
                 instruct=instruct,
             )
-            return wavs[0], sample_rate
+
+            # Convert to numpy array for soundfile compatibility
+            audio = wavs[0]
+            if isinstance(audio, torch.Tensor):
+                audio = audio.detach().cpu().float().numpy()
+            elif not isinstance(audio, np.ndarray):
+                audio = np.array(audio, dtype=np.float32)
+
+            return audio, int(sample_rate)
 
         # Run blocking inference in thread pool to avoid blocking event loop
         audio, sample_rate = await asyncio.to_thread(_generate_sync)
