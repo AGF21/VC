@@ -130,11 +130,35 @@ jobs:
           p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
           p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
 
+      - name: Set up Tauri signing key
+        shell: bash
+        env:
+          SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if [ -n "$SIGNING_KEY" ]; then
+            echo "Using provided TAURI_SIGNING_PRIVATE_KEY"
+            {
+              printf 'TAURI_SIGNING_PRIVATE_KEY<<KEYEOF\n'
+              printf '%s\n' "$SIGNING_KEY"
+              printf 'KEYEOF\n'
+            } >> "$GITHUB_ENV"
+            echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=$SIGNING_KEY_PASSWORD" >> "$GITHUB_ENV"
+          else
+            echo "No signing key found – generating temporary key for CI build"
+            cd tauri && bun run tauri signer generate --ci -p "" -w "$RUNNER_TEMP/voicebox.key" -f
+            {
+              printf 'TAURI_SIGNING_PRIVATE_KEY<<KEYEOF\n'
+              cat "$RUNNER_TEMP/voicebox.key"
+              printf 'KEYEOF\n'
+            } >> "$GITHUB_ENV"
+            echo 'TAURI_SIGNING_PRIVATE_KEY_PASSWORD=' >> "$GITHUB_ENV"
+            rm "$RUNNER_TEMP/voicebox.key"
+          fi
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           ENABLE_CODE_SIGNING: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
