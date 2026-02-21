@@ -1,16 +1,16 @@
 # Troubleshooting Guide
 
-Common issues and solutions for Voicebox.
+Common issues and solutions for punsVC.
 
 ## Installation Issues
 
-### macOS: "Voicebox cannot be opened because it is from an unidentified developer"
+### macOS: "punsVC cannot be opened because it is from an unidentified developer"
 
 **Solution:**
 1. Right-click the `.dmg` file
 2. Select "Open"
 3. Click "Open" in the security dialog
-4. Alternatively, go to System Settings → Privacy & Security → Allow Voicebox
+4. Alternatively, go to System Settings → Privacy & Security → Allow punsVC
 
 ### Windows: "Windows protected your PC"
 
@@ -232,10 +232,10 @@ chmod +x voicebox-*.AppImage
 
 **Solutions:**
 1. **Close other instances**
-   - Ensure only one Voicebox instance is running
+   - Ensure only one punsVC instance is running
 
 2. **Restart app**
-   - Close and reopen Voicebox
+   - Close and reopen punsVC
 
 3. **Check file permissions**
    - Ensure database file is writable
@@ -293,7 +293,7 @@ chmod +x voicebox-*.AppImage
 2. **Create new issue**
    - Include:
      - OS and version
-     - Voicebox version
+     - punsVC version
      - Steps to reproduce
      - Error messages/logs
      - Screenshots (if applicable)

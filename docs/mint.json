@@ -1,15 +1,15 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Voicebox",
+  "name": "punsVC",
   "logo": {
     "light": "/logo/icon-light.png",
     "dark": "/logo/icon-dark.png"
   },
   "favicon": "/favicon.png",
   "colors": {
-    "primary": "#BF9E40",
-    "light": "#D4B560",
-    "dark": "#A68A35"
+    "primary": "#2BB5B8",
+    "light": "#3DD4D7",
+    "dark": "#1F9497"
   },
   "styles": {
     "css": ["/custom.css"]

@@ -32,7 +32,7 @@ export function Sidebar({ isMacOS }: SidebarProps) {
     >
       {/* Logo */}
       <div className="mb-2">
-        <span style={{ fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif', color: 'white', fontSize: '1.25rem', letterSpacing: '0.05em' }}>zest</span>
+        <span style={{ fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif', color: 'white', fontSize: '1.25rem', letterSpacing: '0.05em' }}>punsVC</span>
       </div>
 
       {/* Navigation Buttons */}
