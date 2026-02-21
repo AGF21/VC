@@ -1,6 +1,6 @@
-# Contributing to Voicebox
+# Contributing to punsVC
 
-Thank you for your interest in contributing to Voicebox! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to punsVC! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
@@ -277,7 +277,7 @@ def create_profile(name, language):
 ## Project Structure
 
 ```
-voicebox/
+punsvc/
 ├── app/              # Shared React frontend
 │   └── src/
 │       ├── components/   # UI components
@@ -430,4 +430,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-Thank you for contributing to Voicebox! 🎉
+Thank you for contributing to punsVC! 🎉

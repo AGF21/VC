@@ -1,4 +1,4 @@
-// Shared TypeScript types for the voicebox application
+// Shared TypeScript types for the punsVC application
 
 export interface VoiceProfile {
   id: string;

@@ -80,10 +80,10 @@ export default function Home() {
             {/* Left side - Content */}
             <div className="space-y-6 lg:pr-8">
               <div className="flex lg:justify-start justify-center mb-6">
-                <span style={{ fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif', color: 'white', fontSize: '3rem', letterSpacing: '0.05em' }}>zest</span>
+                <span style={{ fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif', color: 'white', fontSize: '3rem', letterSpacing: '0.05em' }}>punsVC</span>
               </div>
               <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-tight text-center lg:text-left">
-                Voicebox
+                punsVC
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-foreground/70 max-w-xl text-center lg:text-left mx-auto lg:mx-0">
                 Open source voice cloning powered by Qwen3-TTS. Create natural-sounding speech from
@@ -95,7 +95,7 @@ export default function Home() {
                 <div className="w-full max-w-2xl">
                   <Image
                     src="/assets/app-screenshot-1.webp"
-                    alt="Voicebox Application Screenshot"
+                    alt="punsVC Application Screenshot"
                     width={1920}
                     height={1080}
                     className="w-full h-auto rounded-lg shadow-lg"
@@ -176,7 +176,7 @@ export default function Home() {
               <div className="absolute right-0 top-0 -mt-10 w-[200%] -mr-[100%]">
                 <Image
                   src="/assets/app-screenshot-1.webp"
-                  alt="Voicebox Application Screenshot"
+                  alt="punsVC Application Screenshot"
                   width={1920}
                   height={1080}
                   className="w-full h-auto"
@@ -195,7 +195,7 @@ export default function Home() {
             <div className="w-full">
               <Image
                 src="/assets/app-screenshot-2.webp"
-                alt="Voicebox Screenshot 2"
+                alt="punsVC Screenshot 2"
                 width={1920}
                 height={1080}
                 className="w-full h-auto rounded-lg shadow-lg"
@@ -204,7 +204,7 @@ export default function Home() {
             <div className="w-full">
               <Image
                 src="/assets/app-screenshot-1.webp"
-                alt="Voicebox Screenshot 1"
+                alt="punsVC Screenshot 1"
                 width={1920}
                 height={1080}
                 className="w-full h-auto rounded-lg shadow-lg"
@@ -213,7 +213,7 @@ export default function Home() {
             <div className="w-full">
               <Image
                 src="/assets/app-screenshot-3.webp"
-                alt="Voicebox Screenshot 3"
+                alt="punsVC Screenshot 3"
                 width={1920}
                 height={1080}
                 className="w-full h-auto rounded-lg shadow-lg"
@@ -227,17 +227,17 @@ export default function Home() {
       <section className="py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-6 sm:mb-8">
-            What is Voicebox?
+            What is punsVC?
           </h2>
           <div className="space-y-6 text-lg text-foreground/80 text-center">
             <p>
-              Voicebox is a <strong>local-first voice cloning studio</strong> with DAW-like features
+              punsVC is a <strong>local-first voice cloning studio</strong> with DAW-like features
               for professional voice synthesis. Think of it as a{' '}
               <strong>local, free and open-source alternative to ElevenLabs</strong> — download
               models, clone voices, and generate speech entirely on your machine.
             </p>
             <p>
-              Unlike cloud services that lock your voice data behind subscriptions, Voicebox gives
+              Unlike cloud services that lock your voice data behind subscriptions, punsVC gives
               you complete privacy, professional tools, and native performance. Download a voice
               model, clone any voice from a few seconds of audio, and compose multi-voice projects
               with studio-grade editing tools.
@@ -270,7 +270,7 @@ export default function Home() {
                 <source
                   src="/voicebox-demo.webm"
                   type="video/webm"
-                  aria-label="Voicebox Demo Video"
+                  aria-label="punsVC Demo Video"
                 />
                 Your browser does not support the video tag.
               </video>

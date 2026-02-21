@@ -1,8 +1,8 @@
 <p align="center">
-  <img src=".github/assets/icon-dark.webp" alt="Voicebox" width="120" height="120" />
+  <img src=".github/assets/icon-dark.webp" alt="punsVC" width="120" height="120" />
 </p>
 
-<h1 align="center">Voicebox</h1>
+<h1 align="center">punsVC</h1>
 
 <p align="center">
   <strong>The open-source voice synthesis studio.</strong><br/>
@@ -37,7 +37,7 @@
 
 <p align="center">
   <a href="https://voicebox.sh">
-    <img src="landing/public/assets/app-screenshot-1.webp" alt="Voicebox App Screenshot" width="800" />
+    <img src="landing/public/assets/app-screenshot-1.webp" alt="punsVC App Screenshot" width="800" />
   </a>
 </p>
 
@@ -48,20 +48,20 @@
 <br/>
 
 <p align="center">
-  <img src="landing/public/assets/app-screenshot-2.webp" alt="Voicebox Screenshot 2" width="800" />
+  <img src="landing/public/assets/app-screenshot-2.webp" alt="punsVC Screenshot 2" width="800" />
 </p>
 
 <p align="center">
-  <img src="landing/public/assets/app-screenshot-3.webp" alt="Voicebox Screenshot 3" width="800" />
+  <img src="landing/public/assets/app-screenshot-3.webp" alt="punsVC Screenshot 3" width="800" />
 </p>
 
 <br/>
 
-## What is Voicebox?
+## What is punsVC?
 
-Voicebox is a **local-first voice cloning studio** with DAW-like features for professional voice synthesis. Think of it as a **local, free and open-source alternative to ElevenLabs** — download models, clone voices, and generate speech entirely on your machine.
+punsVC is a **local-first voice cloning studio** with DAW-like features for professional voice synthesis. Think of it as a **local, free and open-source alternative to ElevenLabs** — download models, clone voices, and generate speech entirely on your machine.
 
-Unlike cloud services that lock your voice data behind subscriptions, Voicebox gives you:
+Unlike cloud services that lock your voice data behind subscriptions, punsVC gives you:
 
 - **Complete privacy** — models and voice data stay on your machine
 - **Professional tools** — multi-track timeline editor, audio trimming, conversation mixing
@@ -76,7 +76,7 @@ Download a voice model, clone any voice from a few seconds of audio, and compose
 
 ## Download
 
-Voicebox is available now for macOS and Windows.
+punsVC is available now for macOS and Windows.
 
 | Platform | Download |
 |----------|----------|
@@ -139,13 +139,13 @@ Create multi-voice narratives, podcasts, and conversations with a timeline-based
 
 - **Local mode** — Everything runs on your machine
 - **Remote mode** — Connect to a GPU server on your network
-- **One-click server** — Turn any machine into a Voicebox server
+- **One-click server** — Turn any machine into a punsVC server
 
 ---
 
 ## API
 
-Voicebox exposes a full REST API, so you can integrate voice synthesis into your own apps.
+punsVC exposes a full REST API, so you can integrate voice synthesis into your own apps.
 
 ```bash
 # Generate speech
@@ -198,7 +198,7 @@ Full API documentation available at `http://localhost:8000/docs` when running.
 
 ## Roadmap
 
-Voicebox is the beginning of something bigger. Here's what's coming:
+punsVC is the beginning of something bigger. Here's what's coming:
 
 ### Coming Soon
 
@@ -215,9 +215,9 @@ Voicebox is the beginning of something bigger. Here's what's coming:
 - **Voice Design** — Create new voices from text descriptions
 - **Project System** — Save and load complex multi-voice sessions
 - **Plugin Architecture** — Extend with custom models and effects
-- **Mobile Companion** — Control Voicebox from your phone
+- **Mobile Companion** — Control punsVC from your phone
 
-Voicebox aims to be the **one-stop shop for everything voice** — cloning, synthesis, editing, effects, and beyond.
+punsVC aims to be the **one-stop shop for everything voice** — cloning, synthesis, editing, effects, and beyond.
 
 ---
 
@@ -269,7 +269,7 @@ bun run dev
 ### Project Structure
 
 ```
-voicebox/
+punsvc/
 ├── app/              # Shared React frontend
 ├── tauri/            # Desktop app (Tauri + Rust)
 ├── web/              # Web deployment

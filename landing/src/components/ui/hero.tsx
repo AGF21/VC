@@ -19,7 +19,7 @@ export function Hero({ title, description, actions, className, showLogo = true }
         <div className="space-y-6 lg:pr-8">
           {showLogo && (
             <div className="flex lg:justify-start justify-center mb-6">
-              <span style={{ fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif', color: 'white', fontSize: '3rem', letterSpacing: '0.05em' }}>zest</span>
+              <span style={{ fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif', color: 'white', fontSize: '3rem', letterSpacing: '0.05em' }}>punsVC</span>
             </div>
           )}
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-tight text-left">

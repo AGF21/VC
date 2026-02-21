@@ -1,4 +1,4 @@
-# Voicebox Makefile
+# punsVC Makefile
 # Unix-only (macOS/Linux). Windows users should use WSL.
 
 SHELL := /bin/bash
@@ -25,7 +25,7 @@ NC := \033[0m # No Color
 
 .PHONY: help
 help: ## Show this help message
-	@echo -e "$(BLUE)Voicebox$(NC) - Development Commands"
+	@echo -e "$(BLUE)punsVC$(NC) - Development Commands"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}'

@@ -45,7 +45,7 @@ export function useExportGeneration() {
 
       await platform.filesystem.saveFile(filename, blob, [
         {
-          name: 'Voicebox Generation',
+          name: 'punsVC Generation',
           extensions: ['zip'],
         },
       ]);
