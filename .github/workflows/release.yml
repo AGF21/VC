@@ -136,25 +136,17 @@ jobs:
           SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           SIGNING_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
-          DELIMITER=$(python -c "import uuid; print(uuid.uuid4().hex)")
+          KEY_FILE="$RUNNER_TEMP/tauri-signing.key"
           if [ -n "$SIGNING_KEY" ]; then
             echo "Using provided TAURI_SIGNING_PRIVATE_KEY"
-            {
-              printf 'TAURI_SIGNING_PRIVATE_KEY<<%s\n' "$DELIMITER"
-              printf '%s\n' "$SIGNING_KEY"
-              printf '%s\n' "$DELIMITER"
-            } >> "$GITHUB_ENV"
+            printf '%s' "$SIGNING_KEY" > "$KEY_FILE"
+            echo "TAURI_SIGNING_PRIVATE_KEY=$KEY_FILE" >> "$GITHUB_ENV"
             echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=$SIGNING_KEY_PASSWORD" >> "$GITHUB_ENV"
           else
             echo "No signing key found – generating temporary key for CI build"
-            cd tauri && bun run tauri signer generate --ci -p "ci-temp" -w "$RUNNER_TEMP/voicebox.key" -f
-            {
-              printf 'TAURI_SIGNING_PRIVATE_KEY<<%s\n' "$DELIMITER"
-              cat "$RUNNER_TEMP/voicebox.key"
-              printf '\n%s\n' "$DELIMITER"
-            } >> "$GITHUB_ENV"
+            cd tauri && bun run tauri signer generate --ci -p "ci-temp" -w "$KEY_FILE" -f
+            echo "TAURI_SIGNING_PRIVATE_KEY=$KEY_FILE" >> "$GITHUB_ENV"
             echo 'TAURI_SIGNING_PRIVATE_KEY_PASSWORD=ci-temp' >> "$GITHUB_ENV"
-            rm "$RUNNER_TEMP/voicebox.key"
           fi
 
       - uses: tauri-apps/tauri-action@v0
