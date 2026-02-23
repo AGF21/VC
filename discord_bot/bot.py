@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-PUNSVC_API_BASE = os.getenv("PUNSVC_API_BASE", "http://localhost:8000")
+PUNSVC_API_BASE = os.getenv("PUNSVC_API_BASE", "http://localhost:17493")
 PUNSVC_API_KEY = os.getenv("PUNSVC_API_KEY")  # Optional, for future auth
 
 if not DISCORD_TOKEN:
