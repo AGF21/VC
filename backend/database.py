@@ -110,9 +110,21 @@ class ChannelDeviceMapping(Base):
 class ProfileChannelMapping(Base):
     """Mapping between voice profiles and audio channels (many-to-many)."""
     __tablename__ = "profile_channel_mappings"
-    
+
     profile_id = Column(String, ForeignKey("profiles.id"), primary_key=True)
     channel_id = Column(String, ForeignKey("audio_channels.id"), primary_key=True)
+
+
+class DiscordUser(Base):
+    """Discord user mapping to voice profiles."""
+    __tablename__ = "discord_users"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    discord_user_id = Column(String, nullable=False, unique=True, index=True)
+    discord_guild_id = Column(String, nullable=True, index=True)  # Guild ID (server), can be null for DMs
+    profile_id = Column(String, ForeignKey("profiles.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 # Database setup will be initialized in init_db()

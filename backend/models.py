@@ -299,3 +299,45 @@ class StoryItemTrim(BaseModel):
 class StoryItemSplit(BaseModel):
     """Request model for splitting a story item."""
     split_time_ms: int = Field(..., ge=0)  # Time within the clip to split at (relative to clip start)
+
+
+# ============================================
+# DISCORD INTEGRATION MODELS
+# ============================================
+
+
+class DiscordUserRegister(BaseModel):
+    """Request model for registering a Discord user."""
+    discord_user_id: str = Field(..., min_length=1)
+    discord_guild_id: Optional[str] = None  # Optional: server/guild ID
+    profile_id: str = Field(..., min_length=1)
+
+
+class DiscordUserResponse(BaseModel):
+    """Response model for Discord user mapping."""
+    id: str
+    discord_user_id: str
+    discord_guild_id: Optional[str]
+    profile_id: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class DiscordGenerateRequest(BaseModel):
+    """Request model for Discord TTS generation."""
+    discord_user_id: str = Field(..., min_length=1)
+    text: str = Field(..., min_length=1, max_length=5000)
+    language: str = Field(default="en", pattern="^(zh|en)$")  # Discord bot only supports en/zh
+    seed: Optional[int] = Field(None, ge=0)
+
+
+class DiscordGenerateResponse(BaseModel):
+    """Response model for Discord TTS generation."""
+    success: bool
+    message: str
+    generation_id: Optional[str] = None
+    audio_url: Optional[str] = None
+    duration: Optional[float] = None

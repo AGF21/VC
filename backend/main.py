@@ -1090,6 +1090,205 @@ async def get_sample_audio(sample_id: str, db: Session = Depends(get_db)):
 
 
 # ============================================
+# DISCORD INTEGRATION ENDPOINTS
+# ============================================
+
+@app.post("/discord/register", response_model=models.DiscordUserResponse)
+async def register_discord_user(
+    data: models.DiscordUserRegister,
+    db: Session = Depends(get_db),
+):
+    """Register a Discord user and link to a voice profile."""
+    try:
+        from .database import DiscordUser as DBDiscordUser
+
+        # Check if profile exists
+        profile = await profiles.get_profile(data.profile_id, db)
+        if not profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
+
+        # Check if Discord user already registered
+        existing = db.query(DBDiscordUser).filter_by(
+            discord_user_id=data.discord_user_id
+        ).first()
+
+        if existing:
+            # Update existing registration
+            existing.profile_id = data.profile_id
+            existing.discord_guild_id = data.discord_guild_id
+            existing.updated_at = datetime.utcnow()
+            db.commit()
+            db.refresh(existing)
+            return existing
+        else:
+            # Create new registration
+            discord_user = DBDiscordUser(
+                id=str(uuid.uuid4()),
+                discord_user_id=data.discord_user_id,
+                discord_guild_id=data.discord_guild_id,
+                profile_id=data.profile_id,
+            )
+            db.add(discord_user)
+            db.commit()
+            db.refresh(discord_user)
+            return discord_user
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/discord/user/{discord_user_id}", response_model=models.DiscordUserResponse)
+async def get_discord_user(
+    discord_user_id: str,
+    db: Session = Depends(get_db),
+):
+    """Get Discord user's linked profile."""
+    try:
+        from .database import DiscordUser as DBDiscordUser
+
+        user = db.query(DBDiscordUser).filter_by(
+            discord_user_id=discord_user_id
+        ).first()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="Discord user not registered")
+
+        return user
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/discord/user/{discord_user_id}")
+async def unlink_discord_user(
+    discord_user_id: str,
+    db: Session = Depends(get_db),
+):
+    """Unlink a Discord user from their voice profile."""
+    try:
+        from .database import DiscordUser as DBDiscordUser
+
+        user = db.query(DBDiscordUser).filter_by(
+            discord_user_id=discord_user_id
+        ).first()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="Discord user not found")
+
+        db.delete(user)
+        db.commit()
+        return {"message": "Discord user unlinked successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/discord/generate", response_model=models.DiscordGenerateResponse)
+async def discord_generate(
+    data: models.DiscordGenerateRequest,
+    db: Session = Depends(get_db),
+):
+    """Generate TTS from Discord (requires registered Discord user)."""
+    try:
+        from .database import DiscordUser as DBDiscordUser
+
+        # Find Discord user's profile
+        discord_user = db.query(DBDiscordUser).filter_by(
+            discord_user_id=data.discord_user_id
+        ).first()
+
+        if not discord_user:
+            return models.DiscordGenerateResponse(
+                success=False,
+                message="Discord user not registered. Use /discord register to link your profile.",
+            )
+
+        # Create generation request
+        gen_request = models.GenerationRequest(
+            profile_id=discord_user.profile_id,
+            text=data.text,
+            language=data.language,
+            seed=data.seed,
+        )
+
+        # Generate audio
+        task_manager = get_task_manager()
+        generation_id = str(uuid.uuid4())
+
+        try:
+            task_manager.start_generation(
+                task_id=generation_id,
+                profile_id=gen_request.profile_id,
+                text=gen_request.text,
+            )
+
+            profile = await profiles.get_profile(gen_request.profile_id, db)
+            if not profile:
+                return models.DiscordGenerateResponse(
+                    success=False,
+                    message="Profile not found",
+                )
+
+            voice_prompt = await profiles.create_voice_prompt_for_profile(
+                gen_request.profile_id,
+                db,
+            )
+
+            tts_model = tts.get_tts_model()
+            model_size = gen_request.model_size or "1.7B"
+
+            await tts_model.load_model_async(model_size)
+            audio, sample_rate = await tts_model.generate(
+                gen_request.text,
+                voice_prompt,
+                gen_request.language,
+                gen_request.seed,
+            )
+
+            duration = len(audio) / sample_rate
+
+            audio_path = config.get_generations_dir() / f"{generation_id}.wav"
+            from .utils.audio import save_audio
+            save_audio(audio, str(audio_path), sample_rate)
+
+            generation = await history.create_generation(
+                profile_id=gen_request.profile_id,
+                text=gen_request.text,
+                language=gen_request.language,
+                audio_path=str(audio_path),
+                duration=duration,
+                seed=gen_request.seed,
+                db=db,
+            )
+
+            task_manager.complete_generation(generation_id)
+
+            return models.DiscordGenerateResponse(
+                success=True,
+                message="Audio generated successfully",
+                generation_id=generation.id,
+                audio_url=f"/audio/{generation.id}",
+                duration=generation.duration,
+            )
+
+        except Exception as e:
+            task_manager.complete_generation(generation_id)
+            return models.DiscordGenerateResponse(
+                success=False,
+                message=f"Generation failed: {str(e)}",
+            )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================
 # MODEL MANAGEMENT
 # ============================================
 

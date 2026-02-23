@@ -140,6 +140,7 @@ Create multi-voice narratives, podcasts, and conversations with a timeline-based
 - **Local mode** — Everything runs on your machine
 - **Remote mode** — Connect to a GPU server on your network
 - **One-click server** — Turn any machine into a punsVC server
+- **Discord Bot** — Generate TTS directly from Discord (optional add-on)
 
 ---
 
@@ -171,6 +172,47 @@ curl -X POST http://localhost:8000/profiles \
 - Content creation automation
 
 Full API documentation available at `http://localhost:8000/docs` when running.
+
+---
+
+## Discord Integration
+
+Use punsVC directly from Discord with the **Discord Bot** add-on.
+
+### Features
+
+- 🎤 Generate TTS with voice profiles via slash commands
+- 🔗 Link your Discord account to voice profiles
+- 📋 List available voices in your server
+- ⚡ Stream audio directly to Discord channels
+
+### Quick Setup
+
+```bash
+# 1. Create Discord bot in developer portal
+# 2. Copy bot token
+# 3. Configure environment
+cp .env.discord.example .env.discord
+nano .env.discord  # Add your DISCORD_TOKEN
+
+# 4. Install dependencies
+pip install discord.py python-dotenv aiohttp
+
+# 5. Run bot
+python discord_bot/bot.py
+```
+
+### Commands
+
+```
+/generate text:"Hello world" voice:profile-id language:en
+/voices                    # List all voice profiles
+/connect voice:profile-id  # Link your account to a voice
+/myvoice                   # See your linked voice
+/disconnect                # Unlink your voice
+```
+
+**[Complete Discord Setup Guide](docs/DISCORD_BOT_SETUP.md)**
 
 ---
 
