@@ -18,7 +18,7 @@ interface ServerStore {
 export const useServerStore = create<ServerStore>()(
   persist(
     (set) => ({
-      serverUrl: 'http://127.0.0.1:17493',
+      serverUrl: 'http://127.0.0.1:8000',
       setServerUrl: (url) => set({ serverUrl: url }),
 
       isConnected: false,
