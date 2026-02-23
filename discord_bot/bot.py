@@ -58,15 +58,29 @@ class RegenerationView(discord.ui.View):
 
     async def _regenerate_with_emotion(self, interaction: discord.Interaction, emotion_label: str, emotion_instruction: str):
         """Regenerate audio with specified emotion."""
+        # Check if the user clicking is the one who generated the audio
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message(
+                "❌ Only the user who generated this audio can regenerate it.",
+                ephemeral=True
+            )
+            return
+
         await interaction.response.defer()
 
         try:
+            if not self.bot_cog.session:
+                await interaction.followup.send("❌ Bot session not ready. Please try again.")
+                return
+
             payload = {
                 "discord_user_id": str(self.user_id),
                 "text": self.text,
                 "language": self.language,
                 "instruct": emotion_instruction,
             }
+
+            logger.info(f"Regenerating with emotion: {emotion_label} for user {self.user_id}")
 
             async with self.bot_cog.session.post(
                 f"{PUNSVC_API_BASE}/discord/generate",
