@@ -42,6 +42,7 @@ EMOTION_PRESETS = {
     "🤔": ("Confused", "speak confused and uncertain"),
     "😴": ("Tired", "speak tired and weary"),
     "🎉": ("Excited", "speak with excitement and energy"),
+    "😏": ("Sultry", "speak in a sultry, breathy, intimate tone"),
 }
 
 
@@ -156,6 +157,10 @@ class RegenerationView(discord.ui.View):
     @discord.ui.button(emoji="🎉", label="Excited", style=discord.ButtonStyle.primary)
     async def excited_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self._regenerate_with_emotion(interaction, "Excited", "speak with excitement and energy")
+
+    @discord.ui.button(emoji="😏", label="Sultry", style=discord.ButtonStyle.secondary)
+    async def sultry_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self._regenerate_with_emotion(interaction, "Sultry", "speak in a sultry, breathy, intimate tone")
 
 
 class PunsVCBot(commands.Cog):
