@@ -33,6 +33,117 @@ if not DISCORD_TOKEN:
     raise ValueError("DISCORD_TOKEN environment variable is required")
 
 
+# Emotion preset definitions
+EMOTION_PRESETS = {
+    "😊": ("Happy", "speak happily and cheerfully"),
+    "😢": ("Sad", "speak sadly and melancholic"),
+    "😠": ("Angry", "speak with anger and intensity"),
+    "😌": ("Calm", "speak calmly and professionally"),
+    "🤔": ("Confused", "speak confused and uncertain"),
+    "😴": ("Tired", "speak tired and weary"),
+    "🎉": ("Excited", "speak with excitement and energy"),
+}
+
+
+class RegenerationView(discord.ui.View):
+    """View with emotion preset buttons for regenerating audio."""
+
+    def __init__(self, bot_cog: "PunsVCBot", profile_id: str, text: str, language: str, user_id: int):
+        super().__init__(timeout=3600)  # 1 hour timeout
+        self.bot_cog = bot_cog
+        self.profile_id = profile_id
+        self.text = text
+        self.language = language
+        self.user_id = user_id
+
+    async def _regenerate_with_emotion(self, interaction: discord.Interaction, emotion_label: str, emotion_instruction: str):
+        """Regenerate audio with specified emotion."""
+        await interaction.response.defer()
+
+        try:
+            payload = {
+                "discord_user_id": str(self.user_id),
+                "text": self.text,
+                "language": self.language,
+                "instruct": emotion_instruction,
+            }
+
+            async with self.bot_cog.session.post(
+                f"{PUNSVC_API_BASE}/discord/generate",
+                json=payload,
+                headers=self.bot_cog._get_headers()
+            ) as resp:
+                result = await resp.json()
+
+                if not result.get("success"):
+                    await interaction.followup.send(
+                        f"❌ Regeneration failed: {result.get('message', 'Unknown error')}"
+                    )
+                    return
+
+                generation_id = result.get("generation_id")
+                duration = result.get("duration", 0)
+
+                async with self.bot_cog.session.get(
+                    f"{PUNSVC_API_BASE}/audio/{generation_id}",
+                    headers=self.bot_cog._get_headers()
+                ) as audio_resp:
+                    if audio_resp.status == 200:
+                        audio_data = await audio_resp.read()
+                        profile_name = await self.bot_cog._get_profile_name(self.profile_id)
+
+                        embed = discord.Embed(
+                            title=f"🎤 TTS Generated - {emotion_label} Tone",
+                            description=f"**Voice:** {profile_name or self.profile_id}\n**Duration:** {duration:.1f}s",
+                            color=discord.Color.blurple()
+                        )
+                        embed.add_field(name="Text", value=self.text[:256], inline=False)
+
+                        audio_file = discord.File(
+                            io.BytesIO(audio_data),
+                            filename=f"tts_{generation_id[:8]}.wav"
+                        )
+                        await interaction.followup.send(
+                            embed=embed,
+                            file=audio_file,
+                            view=RegenerationView(self.bot_cog, self.profile_id, self.text, self.language, self.user_id)
+                        )
+                    else:
+                        await interaction.followup.send("❌ Failed to download generated audio")
+
+        except Exception as e:
+            logger.error(f"Error regenerating with emotion: {e}")
+            await interaction.followup.send(f"❌ Error: {str(e)[:200]}")
+
+    @discord.ui.button(emoji="😊", label="Happy", style=discord.ButtonStyle.primary)
+    async def happy_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self._regenerate_with_emotion(interaction, "Happy", "speak happily and cheerfully")
+
+    @discord.ui.button(emoji="😢", label="Sad", style=discord.ButtonStyle.primary)
+    async def sad_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self._regenerate_with_emotion(interaction, "Sad", "speak sadly and melancholic")
+
+    @discord.ui.button(emoji="😠", label="Angry", style=discord.ButtonStyle.danger)
+    async def angry_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self._regenerate_with_emotion(interaction, "Angry", "speak with anger and intensity")
+
+    @discord.ui.button(emoji="😌", label="Calm", style=discord.ButtonStyle.success)
+    async def calm_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self._regenerate_with_emotion(interaction, "Calm", "speak calmly and professionally")
+
+    @discord.ui.button(emoji="🤔", label="Confused", style=discord.ButtonStyle.secondary)
+    async def confused_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self._regenerate_with_emotion(interaction, "Confused", "speak confused and uncertain")
+
+    @discord.ui.button(emoji="😴", label="Tired", style=discord.ButtonStyle.secondary)
+    async def tired_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self._regenerate_with_emotion(interaction, "Tired", "speak tired and weary")
+
+    @discord.ui.button(emoji="🎉", label="Excited", style=discord.ButtonStyle.primary)
+    async def excited_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self._regenerate_with_emotion(interaction, "Excited", "speak with excitement and energy")
+
+
 class PunsVCBot(commands.Cog):
     """punsVC Discord integration commands."""
 
@@ -177,14 +288,15 @@ class PunsVCBot(commands.Cog):
                         )
                         embed.add_field(name="Text", value=text[:256], inline=False)
 
-                        # Send audio file
+                        # Send audio file with emotion preset buttons
                         audio_file = discord.File(
                             io.BytesIO(audio_data),
                             filename=f"tts_{generation_id[:8]}.wav"
                         )
                         await interaction.followup.send(
                             embed=embed,
-                            file=audio_file
+                            file=audio_file,
+                            view=RegenerationView(self, voice, text, language, interaction.user.id)
                         )
                     else:
                         await interaction.followup.send(
