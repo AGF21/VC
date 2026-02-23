@@ -1215,6 +1215,7 @@ async def discord_generate(
             text=data.text,
             language=data.language,
             seed=data.seed,
+            instruct=data.instruct,
         )
 
         # Generate audio
@@ -1249,6 +1250,7 @@ async def discord_generate(
                 voice_prompt,
                 gen_request.language,
                 gen_request.seed,
+                gen_request.instruct,
             )
 
             duration = len(audio) / sample_rate
@@ -1265,6 +1267,7 @@ async def discord_generate(
                 duration=duration,
                 seed=gen_request.seed,
                 db=db,
+                instruct=gen_request.instruct,
             )
 
             task_manager.complete_generation(generation_id)

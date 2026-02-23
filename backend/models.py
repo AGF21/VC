@@ -332,6 +332,7 @@ class DiscordGenerateRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=5000)
     language: str = Field(default="en", pattern="^(zh|en)$")  # Discord bot only supports en/zh
     seed: Optional[int] = Field(None, ge=0)
+    instruct: Optional[str] = Field(None, max_length=500)
 
 
 class DiscordGenerateResponse(BaseModel):

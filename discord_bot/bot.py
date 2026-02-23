@@ -88,6 +88,7 @@ class PunsVCBot(commands.Cog):
         text="Text to synthesize",
         voice="Voice profile ID (or name)",
         language="Language (en or zh)",
+        emotion="Emotion/style instruction (e.g., 'happy', 'sad', 'angry', 'professional')",
     )
     async def generate(
         self,
@@ -95,6 +96,7 @@ class PunsVCBot(commands.Cog):
         text: str,
         voice: Optional[str] = None,
         language: str = "en",
+        emotion: Optional[str] = None,
     ):
         """Generate TTS audio in Discord."""
         await interaction.response.defer()
@@ -139,6 +141,8 @@ class PunsVCBot(commands.Cog):
                 "text": text,
                 "language": language,
             }
+            if emotion:
+                payload["instruct"] = emotion
 
             async with self.session.post(
                 f"{PUNSVC_API_BASE}/discord/generate",
