@@ -60,12 +60,14 @@ export function MultiSelect({
     onChange(newValue);
   };
 
+  const selectedLabels = value
+    .map((v) => options.find((opt) => opt.value === v)?.label)
+    .filter(Boolean) as string[];
+
   const displayText =
     value.length === 0
       ? placeholder
-      : value.length === 1
-        ? options.find((opt) => opt.value === value[0])?.label || placeholder
-        : `${value.length} selected`;
+      : selectedLabels.join(', ');
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
