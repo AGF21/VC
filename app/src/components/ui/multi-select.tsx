@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import {
   DropdownMenu,
@@ -60,12 +60,14 @@ export function MultiSelect({
     onChange(newValue);
   };
 
-  const displayText =
-    value.length === 0
-      ? placeholder
-      : value.length === 1
-        ? options.find((opt) => opt.value === value[0])?.label || placeholder
-        : `${value.length} selected`;
+  const selectedLabels = value
+    .map((v) => options.find((opt) => opt.value === v)?.label)
+    .filter(Boolean) as string[];
+
+  const handleRemoveChip = (e: React.MouseEvent, chipValue: string) => {
+    e.stopPropagation();
+    onChange(value.filter((v) => v !== chipValue));
+  };
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -73,12 +75,37 @@ export function MultiSelect({
         <button
           type="button"
           className={cn(
-            'flex h-8 w-full items-center justify-between rounded-full border border-border bg-card px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-background/50 transition-all',
+            'flex flex-wrap gap-2 w-full items-center rounded-lg border border-border bg-card px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-background/50 transition-all min-h-8',
             className,
           )}
         >
-          <span className="line-clamp-1">{displayText}</span>
-          <ChevronDown className="h-4 w-4 opacity-50" />
+          {value.length === 0 ? (
+            <span className="text-muted-foreground flex-1">{placeholder}</span>
+          ) : (
+            <>
+              {value.map((v, index) => {
+                const label = options.find((opt) => opt.value === v)?.label || v;
+                return (
+                  <span
+                    key={v}
+                    className="inline-flex items-center gap-1 bg-primary text-primary-foreground px-2 py-1 rounded-md text-xs font-medium whitespace-nowrap"
+                  >
+                    {label}
+                    <button
+                      type="button"
+                      onClick={(e) => handleRemoveChip(e, v)}
+                      className="ml-1 hover:opacity-75 focus:outline-none"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                );
+              })}
+            </>
+          )}
+          <div className="ml-auto">
+            <ChevronDown className="h-4 w-4 opacity-50" />
+          </div>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
