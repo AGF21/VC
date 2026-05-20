@@ -4,6 +4,7 @@ from discord.ext import commands
 from discord import app_commands
 import aiohttp
 import asyncio
+from io import BytesIO
 from typing import Optional
 from dotenv import load_dotenv
 
@@ -95,11 +96,32 @@ class EmotionButton(discord.ui.View):
                         embed.set_footer(text=f"Duration: {data['duration']:.2f}s")
                         view = EmotionButton(self.profile_id, self.text, data['id'])
                         audio_url = f"{PUNSVC_API_URL}/audio/{data['id']}.wav"
-                        await interaction.followup.send(
-                            embed=embed,
-                            file=discord.File(audio_url, filename="speech.wav"),
-                            view=view
-                        )
+                        try:
+                            async with aiohttp.ClientSession() as audio_session:
+                                async with audio_session.get(audio_url) as audio_resp:
+                                    if audio_resp.status == 200:
+                                        audio_data = await audio_resp.read()
+                                        audio_file = discord.File(
+                                            BytesIO(audio_data),
+                                            filename="speech.wav"
+                                        )
+                                        await interaction.followup.send(
+                                            embed=embed,
+                                            file=audio_file,
+                                            view=view
+                                        )
+                                    else:
+                                        await interaction.followup.send(
+                                            embed=embed,
+                                            view=view,
+                                            content="⚠️ Could not load audio preview"
+                                        )
+                        except Exception as e:
+                            await interaction.followup.send(
+                                embed=embed,
+                                view=view,
+                                content=f"⚠️ Audio preview unavailable"
+                            )
                     else:
                         await interaction.followup.send(f"❌ Generation failed: {resp.status}")
         except Exception as e:
@@ -175,14 +197,35 @@ async def generate(interaction: discord.Interaction, text: str):
                     embed.add_field(name="Profile ID", value=profile_id, inline=True)
                     embed.set_footer(text=f"Duration: {data['duration']:.2f}s")
 
-                    # Send message with audio file and buttons
+                    # Download and send audio file
                     view = EmotionButton(profile_id, text, data['id'])
                     audio_url = f"{PUNSVC_API_URL}/audio/{data['id']}.wav"
-                    await interaction.followup.send(
-                        embed=embed,
-                        file=discord.File(audio_url, filename="speech.wav"),
-                        view=view
-                    )
+                    try:
+                        async with aiohttp.ClientSession() as audio_session:
+                            async with audio_session.get(audio_url) as audio_resp:
+                                if audio_resp.status == 200:
+                                    audio_data = await audio_resp.read()
+                                    audio_file = discord.File(
+                                        BytesIO(audio_data),
+                                        filename="speech.wav"
+                                    )
+                                    await interaction.followup.send(
+                                        embed=embed,
+                                        file=audio_file,
+                                        view=view
+                                    )
+                                else:
+                                    await interaction.followup.send(
+                                        embed=embed,
+                                        view=view,
+                                        content="⚠️ Could not load audio preview"
+                                    )
+                    except Exception as e:
+                        await interaction.followup.send(
+                            embed=embed,
+                            view=view,
+                            content=f"⚠️ Audio preview unavailable: {str(e)}"
+                        )
                 else:
                     await interaction.followup.send(f"❌ Generation failed: {resp.status}")
     except Exception as e:
