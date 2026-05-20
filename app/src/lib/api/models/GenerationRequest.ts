@@ -10,6 +10,7 @@ export type GenerationRequest = {
   text: string;
   language?: string;
   seed?: number | null;
+  model_type?: string;
   model_size?: string | null;
   instruct?: string | null;
 };

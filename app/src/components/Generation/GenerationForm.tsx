@@ -98,7 +98,30 @@ export function GenerationForm() {
               )}
             />
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-4">
+              <FormField
+                control={form.control}
+                name="modelType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Model</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="qwen">Qwen TTS</SelectItem>
+                        <SelectItem value="chatterbox">Chatterbox Turbo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Select TTS engine</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="language"
@@ -127,24 +150,41 @@ export function GenerationForm() {
               <FormField
                 control={form.control}
                 name="modelSize"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Model Size</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="1.7B">Qwen TTS 1.7B (Higher Quality)</SelectItem>
-                        <SelectItem value="0.6B">Qwen TTS 0.6B (Faster)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>Larger models produce better quality</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const modelType = form.watch('modelType');
+                  const isChatterbox = modelType === 'chatterbox';
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Quality</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={isChatterbox}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {isChatterbox ? (
+                            <SelectItem value="turbo">Turbo (350M)</SelectItem>
+                          ) : (
+                            <>
+                              <SelectItem value="1.7B">1.7B (Higher Quality)</SelectItem>
+                              <SelectItem value="0.6B">0.6B (Faster)</SelectItem>
+                            </>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        {isChatterbox ? 'Fast & lightweight' : 'Larger = better quality'}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormField
