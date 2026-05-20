@@ -10,14 +10,17 @@ import soundfile as sf
 from .backends import get_tts_backend, TTSBackend
 
 
-def get_tts_model() -> TTSBackend:
+def get_tts_model(model_type: str = "qwen") -> TTSBackend:
     """
-    Get TTS backend instance (MLX or PyTorch based on platform).
-    
+    Get TTS backend instance based on model type.
+
+    Args:
+        model_type: Type of TTS model ("qwen" or "chatterbox")
+
     Returns:
         TTS backend instance
     """
-    return get_tts_backend()
+    return get_tts_backend(model_type)
 
 
 def unload_tts_model():

@@ -549,13 +549,14 @@ async def generate_speech(
         )
         
         # Generate audio
-        tts_model = tts.get_tts_model()
+        model_type = data.model_type or "qwen"
+        tts_model = tts.get_tts_model(model_type)
         # Load the requested model size if different from current (async to not block)
-        model_size = data.model_size or "1.7B"
+        model_size = data.model_size or ("turbo" if model_type == "chatterbox" else "1.7B")
 
         # Check if model needs to be downloaded first (works for both PyTorch and MLX)
         if not tts_model.is_loaded() and hasattr(tts_model, '_is_model_cached') and not tts_model._is_model_cached(model_size):
-            model_name = f"qwen-tts-{model_size}"
+            model_name = f"{model_type}-{model_size}"
 
             async def download_model_background():
                 try:
@@ -1171,7 +1172,15 @@ async def get_model_status():
             return whisper_model.is_loaded() and getattr(whisper_model, 'model_size', None) == model_size
         except Exception:
             return False
-    
+
+    def check_chatterbox_loaded():
+        """Check if Chatterbox TTS model is loaded."""
+        try:
+            chatterbox_model = tts.get_tts_model("chatterbox")
+            return chatterbox_model.is_loaded()
+        except Exception:
+            return False
+
     # Use backend-specific model IDs
     if backend_type == "mlx":
         tts_1_7b_id = "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16"
@@ -1203,6 +1212,13 @@ async def get_model_status():
             "hf_repo_id": tts_0_6b_id,
             "model_size": "0.6B",
             "check_loaded": lambda: check_tts_loaded("0.6B"),
+        },
+        {
+            "model_name": "chatterbox-turbo",
+            "display_name": "Chatterbox Turbo (350M)",
+            "hf_repo_id": "resemble-ai/chatterbox-tts",
+            "model_size": "turbo",
+            "check_loaded": check_chatterbox_loaded,
         },
         {
             "model_name": "whisper-base",
@@ -1393,11 +1409,15 @@ async def trigger_model_download(request: models.ModelDownloadRequest):
     model_configs = {
         "qwen-tts-1.7B": {
             "model_size": "1.7B",
-            "load_func": lambda: tts.get_tts_model().load_model("1.7B"),
+            "load_func": lambda: tts.get_tts_model("qwen").load_model("1.7B"),
         },
         "qwen-tts-0.6B": {
             "model_size": "0.6B",
-            "load_func": lambda: tts.get_tts_model().load_model("0.6B"),
+            "load_func": lambda: tts.get_tts_model("qwen").load_model("0.6B"),
+        },
+        "chatterbox-turbo": {
+            "model_size": "turbo",
+            "load_func": lambda: tts.get_tts_model("chatterbox").load_model("turbo"),
         },
         "whisper-base": {
             "model_size": "base",
@@ -1475,6 +1495,11 @@ async def delete_model(model_name: str):
             "model_size": "0.6B",
             "model_type": "tts",
         },
+        "chatterbox-turbo": {
+            "hf_repo_id": "resemble-ai/chatterbox-tts",
+            "model_size": "turbo",
+            "model_type": "chatterbox",
+        },
         "whisper-base": {
             "hf_repo_id": "openai/whisper-base",
             "model_size": "base",
@@ -1506,9 +1531,13 @@ async def delete_model(model_name: str):
     try:
         # Check if model is loaded and unload it first
         if config["model_type"] == "tts":
-            tts_model = tts.get_tts_model()
-            if tts_model.is_loaded() and tts_model.model_size == config["model_size"]:
+            tts_model = tts.get_tts_model("qwen")
+            if tts_model.is_loaded() and getattr(tts_model, 'model_size', None) == config["model_size"]:
                 tts.unload_tts_model()
+        elif config["model_type"] == "chatterbox":
+            chatterbox_model = tts.get_tts_model("chatterbox")
+            if chatterbox_model.is_loaded():
+                chatterbox_model.unload_model()
         elif config["model_type"] == "whisper":
             whisper_model = transcribe.get_whisper_model()
             if whisper_model.is_loaded() and whisper_model.model_size == config["model_size"]:
