@@ -173,37 +173,6 @@ async def disconnect(interaction: discord.Interaction):
     await interaction.response.send_message(f"✅ Disconnected from voice profile (ID: {profile_id})")
 
 
-@bot.tree.command(name="voices", description="List all available voices")
-async def voices(interaction: discord.Interaction):
-    await interaction.response.defer()
-
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f"{PUNSVC_API_URL}/profiles") as resp:
-                if resp.status == 200:
-                    data = await resp.json()
-                    if data:
-                        embed = discord.Embed(
-                            title="🎤 Available Voices",
-                            color=discord.Color.blue()
-                        )
-                        for profile in data[:15]:
-                            embed.add_field(
-                                name=f"{profile.get('name', 'Unknown')} ({profile['id']})",
-                                value=f"Language: {profile.get('language', 'Unknown')}",
-                                inline=False
-                            )
-                        if len(data) > 15:
-                            embed.set_footer(text=f"Showing 15 of {len(data)} voices")
-                        await interaction.followup.send(embed=embed)
-                    else:
-                        await interaction.followup.send("❌ No voices found!")
-                else:
-                    await interaction.followup.send(f"❌ Failed to fetch voices: {resp.status}")
-    except Exception as e:
-        await interaction.followup.send(f"❌ Error: {str(e)}")
-
-
 @bot.tree.command(name="profiles", description="List available voice profiles")
 async def profiles(interaction: discord.Interaction):
     await interaction.response.defer()
