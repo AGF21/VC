@@ -73,7 +73,7 @@ class EmotionButton(discord.ui.View):
                         embed.add_field(name="Text", value=self.text[:1024], inline=False)
                         embed.set_footer(text=f"Duration: {data['duration']:.2f}s")
                         view = EmotionButton(self.profile_id, self.text, data['id'])
-                        audio_url = f"{PUNSVC_API_URL}/audio/{data['id']}.wav"
+                        audio_url = f"{PUNSVC_API_URL}/audio/{data['id']}"
                         try:
                             async with aiohttp.ClientSession() as audio_session:
                                 async with audio_session.get(audio_url) as audio_resp:
