@@ -5,6 +5,9 @@ from discord import app_commands
 import aiohttp
 import asyncio
 from typing import Optional
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Bot setup
 intents = discord.Intents.default()
