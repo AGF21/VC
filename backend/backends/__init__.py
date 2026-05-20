@@ -113,27 +113,38 @@ class STTBackend(Protocol):
 # Global backend instances
 _tts_backend: Optional[TTSBackend] = None
 _stt_backend: Optional[STTBackend] = None
+_chatterbox_backend: Optional[TTSBackend] = None
 
 
-def get_tts_backend() -> TTSBackend:
+def get_tts_backend(model_type: str = "qwen") -> TTSBackend:
     """
-    Get or create TTS backend instance based on platform.
-    
+    Get or create TTS backend instance based on platform and model type.
+
+    Args:
+        model_type: Type of TTS model ("qwen" or "chatterbox")
+
     Returns:
-        TTS backend instance (MLX or PyTorch)
+        TTS backend instance (MLX, PyTorch, or Chatterbox)
     """
-    global _tts_backend
-    
+    global _tts_backend, _chatterbox_backend
+
+    if model_type == "chatterbox":
+        if _chatterbox_backend is None:
+            from .chatterbox_backend import ChatterboxTTSBackend
+            _chatterbox_backend = ChatterboxTTSBackend()
+        return _chatterbox_backend
+
+    # Default to Qwen model
     if _tts_backend is None:
         backend_type = get_backend_type()
-        
+
         if backend_type == "mlx":
             from .mlx_backend import MLXTTSBackend
             _tts_backend = MLXTTSBackend()
         else:
             from .pytorch_backend import PyTorchTTSBackend
             _tts_backend = PyTorchTTSBackend()
-    
+
     return _tts_backend
 
 
@@ -161,6 +172,7 @@ def get_stt_backend() -> STTBackend:
 
 def reset_backends():
     """Reset backend instances (useful for testing)."""
-    global _tts_backend, _stt_backend
+    global _tts_backend, _stt_backend, _chatterbox_backend
     _tts_backend = None
     _stt_backend = None
+    _chatterbox_backend = None
