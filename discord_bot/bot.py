@@ -28,10 +28,11 @@ EMOTIONS = ["neutral", "happy", "sad", "angry", "excited", "calm"]
 
 
 class EmotionButton(discord.ui.View):
-    def __init__(self, profile_id: str, text: str):
+    def __init__(self, profile_id: str, text: str, audio_id: str = None):
         super().__init__()
         self.profile_id = profile_id
         self.text = text
+        self.audio_id = audio_id
 
     @discord.ui.button(label="😊 Happy", style=discord.ButtonStyle.primary)
     async def happy_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -48,6 +49,28 @@ class EmotionButton(discord.ui.View):
     @discord.ui.button(label="🤩 Excited", style=discord.ButtonStyle.primary)
     async def excited_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.regenerate(interaction, "excited")
+
+    @discord.ui.button(label="⬇️ Download", style=discord.ButtonStyle.success)
+    async def download_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.audio_id:
+            await interaction.response.defer()
+            try:
+                audio_url = f"{PUNSVC_API_URL}/audio/{self.audio_id}.wav"
+                await interaction.followup.send(
+                    content="📥 Here's your generated speech:",
+                    file=discord.File(audio_url, filename=f"speech_{self.audio_id}.wav")
+                )
+            except Exception as e:
+                await interaction.followup.send(f"❌ Download failed: {str(e)}")
+        else:
+            await interaction.response.send_message("❌ No audio available to download", ephemeral=True)
+
+    @discord.ui.button(label="▶️ Play", style=discord.ButtonStyle.success)
+    async def play_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.audio_id:
+            await interaction.response.send_message(f"🎵 **[Play audio in your player](file://{self.audio_id}.wav)**\n\nAudio URL: {PUNSVC_API_URL}/audio/{self.audio_id}.wav", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ No audio available to play", ephemeral=True)
 
     async def regenerate(self, interaction: discord.Interaction, emotion: str):
         await interaction.response.defer()
@@ -70,9 +93,10 @@ class EmotionButton(discord.ui.View):
                         )
                         embed.add_field(name="Text", value=self.text[:1024], inline=False)
                         embed.set_footer(text=f"Duration: {data['duration']:.2f}s")
+                        view = EmotionButton(self.profile_id, self.text, data['id'])
                         await interaction.followup.send(
                             embed=embed,
-                            view=self
+                            view=view
                         )
                     else:
                         await interaction.followup.send(f"❌ Generation failed: {resp.status}")
@@ -149,8 +173,8 @@ async def generate(interaction: discord.Interaction, text: str):
                     embed.add_field(name="Profile ID", value=profile_id, inline=True)
                     embed.set_footer(text=f"Duration: {data['duration']:.2f}s")
 
-                    # Send message with emotion buttons
-                    view = EmotionButton(profile_id, text)
+                    # Send message with emotion and download buttons
+                    view = EmotionButton(profile_id, text, data['id'])
                     await interaction.followup.send(
                         embed=embed,
                         view=view
