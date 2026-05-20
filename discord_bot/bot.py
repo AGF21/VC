@@ -94,8 +94,10 @@ class EmotionButton(discord.ui.View):
                         embed.add_field(name="Text", value=self.text[:1024], inline=False)
                         embed.set_footer(text=f"Duration: {data['duration']:.2f}s")
                         view = EmotionButton(self.profile_id, self.text, data['id'])
+                        audio_url = f"{PUNSVC_API_URL}/audio/{data['id']}.wav"
                         await interaction.followup.send(
                             embed=embed,
+                            file=discord.File(audio_url, filename="speech.wav"),
                             view=view
                         )
                     else:
@@ -173,10 +175,12 @@ async def generate(interaction: discord.Interaction, text: str):
                     embed.add_field(name="Profile ID", value=profile_id, inline=True)
                     embed.set_footer(text=f"Duration: {data['duration']:.2f}s")
 
-                    # Send message with emotion and download buttons
+                    # Send message with audio file and buttons
                     view = EmotionButton(profile_id, text, data['id'])
+                    audio_url = f"{PUNSVC_API_URL}/audio/{data['id']}.wav"
                     await interaction.followup.send(
                         embed=embed,
+                        file=discord.File(audio_url, filename="speech.wav"),
                         view=view
                     )
                 else:
