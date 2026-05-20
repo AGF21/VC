@@ -51,39 +51,6 @@ class EmotionButton(discord.ui.View):
     async def excited_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.regenerate(interaction, "excited")
 
-    @discord.ui.button(label="⬇️ Download", style=discord.ButtonStyle.success)
-    async def download_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.audio_id:
-            await interaction.response.defer()
-            try:
-                audio_url = f"{PUNSVC_API_URL}/audio/{self.audio_id}"
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(audio_url) as resp:
-                        if resp.status == 200:
-                            audio_data = await resp.read()
-                            audio_file = discord.File(
-                                BytesIO(audio_data),
-                                filename=f"speech_{self.audio_id}.wav"
-                            )
-                            await interaction.followup.send(
-                                content="📥 Here's your generated speech:",
-                                file=audio_file
-                            )
-                        else:
-                            await interaction.followup.send(f"❌ Download failed: {resp.status}")
-            except Exception as e:
-                await interaction.followup.send(f"❌ Download failed: {str(e)}")
-        else:
-            await interaction.response.send_message("❌ No audio available to download", ephemeral=True)
-
-    @discord.ui.button(label="▶️ Play", style=discord.ButtonStyle.success)
-    async def play_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if self.audio_id:
-            audio_url = f"{PUNSVC_API_URL}/audio/{self.audio_id}"
-            await interaction.response.send_message(f"🎵 Audio URL: {audio_url}", ephemeral=True)
-        else:
-            await interaction.response.send_message("❌ No audio available to play", ephemeral=True)
-
     async def regenerate(self, interaction: discord.Interaction, emotion: str):
         await interaction.response.defer()
         try:
