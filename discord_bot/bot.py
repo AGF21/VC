@@ -19,18 +19,19 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # Configuration
 PUNSVC_API_URL = "http://localhost:8000"
 DISCORD_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-VOICE_CLIENT = None
+
+# Connected voice profile per user
+connected_voices = {}  # {user_id: profile_id}
 
 # Emotion variants for regeneration
 EMOTIONS = ["neutral", "happy", "sad", "angry", "excited", "calm"]
 
 
 class EmotionButton(discord.ui.View):
-    def __init__(self, profile_id: str, text: str, language: str = "en"):
+    def __init__(self, profile_id: str, text: str):
         super().__init__()
         self.profile_id = profile_id
         self.text = text
-        self.language = language
 
     @discord.ui.button(label="😊 Happy", style=discord.ButtonStyle.primary)
     async def happy_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -55,7 +56,6 @@ class EmotionButton(discord.ui.View):
                 payload = {
                     "profile_id": self.profile_id,
                     "text": self.text,
-                    "language": self.language,
                     "instruct": f"Speak with a {emotion} tone and emotion",
                     "model_type": "qwen",
                     "model_size": "1.7B"
@@ -63,7 +63,6 @@ class EmotionButton(discord.ui.View):
                 async with session.post(f"{PUNSVC_API_URL}/generate", json=payload) as resp:
                     if resp.status == 200:
                         data = await resp.json()
-                        audio_url = f"{PUNSVC_API_URL}/audio/{data['id']}.wav"
                         embed = discord.Embed(
                             title="🎙️ Generated Speech",
                             description=f"Emotion: {emotion.capitalize()}",
@@ -73,7 +72,6 @@ class EmotionButton(discord.ui.View):
                         embed.set_footer(text=f"Duration: {data['duration']:.2f}s")
                         await interaction.followup.send(
                             embed=embed,
-                            file=discord.File(audio_url, filename="speech.wav"),
                             view=self
                         )
                     else:
@@ -92,40 +90,49 @@ async def on_ready():
     print(f"🤖 Bot logged in as {bot.user}")
 
 
-@bot.tree.command(name="connect", description="Connect the bot to your voice channel")
-async def connect(interaction: discord.Interaction):
-    global VOICE_CLIENT
-
-    if not interaction.user.voice:
-        await interaction.response.send_message("❌ You need to be in a voice channel!", ephemeral=True)
-        return
-
-    try:
-        VOICE_CLIENT = await interaction.user.voice.channel.connect()
-        await interaction.response.send_message(f"✅ Connected to {interaction.user.voice.channel.mention}")
-    except Exception as e:
-        await interaction.response.send_message(f"❌ Failed to connect: {str(e)}", ephemeral=True)
-
-
-@bot.tree.command(name="generate", description="Generate speech from a voice profile")
-@app_commands.describe(
-    text="The text to generate speech from",
-    profile_id="The voice profile ID",
-    language="Language code (en, zh, etc.)"
-)
-async def generate(interaction: discord.Interaction, text: str, profile_id: str, language: str = "en"):
+@bot.tree.command(name="connect", description="Connect to a voice profile")
+@app_commands.describe(profile_id="The voice profile ID to connect to")
+async def connect(interaction: discord.Interaction, profile_id: str):
     await interaction.response.defer()
 
-    if not VOICE_CLIENT or not VOICE_CLIENT.is_connected():
-        await interaction.followup.send("❌ Bot is not connected to a voice channel. Use /connect first!", ephemeral=True)
+    try:
+        async with aiohttp.ClientSession() as session:
+            # Verify the profile exists
+            async with session.get(f"{PUNSVC_API_URL}/profiles/{profile_id}") as resp:
+                if resp.status == 200:
+                    profile = await resp.json()
+                    connected_voices[interaction.user.id] = profile_id
+                    embed = discord.Embed(
+                        title="✅ Connected to Voice Profile",
+                        description=f"**{profile.get('name', 'Unknown')}**",
+                        color=discord.Color.green()
+                    )
+                    embed.add_field(name="Profile ID", value=profile_id, inline=True)
+                    embed.add_field(name="Language", value=profile.get('language', 'Unknown'), inline=True)
+                    await interaction.followup.send(embed=embed)
+                else:
+                    await interaction.followup.send(f"❌ Voice profile not found: {profile_id}")
+    except Exception as e:
+        await interaction.followup.send(f"❌ Error: {str(e)}")
+
+
+@bot.tree.command(name="generate", description="Generate speech with the connected voice")
+@app_commands.describe(text="The text to generate speech from")
+async def generate(interaction: discord.Interaction, text: str):
+    await interaction.response.defer()
+
+    user_id = interaction.user.id
+    if user_id not in connected_voices:
+        await interaction.followup.send("❌ No voice profile connected. Use `/connect <profile_id>` first!", ephemeral=True)
         return
+
+    profile_id = connected_voices[user_id]
 
     try:
         async with aiohttp.ClientSession() as session:
             payload = {
                 "profile_id": profile_id,
                 "text": text,
-                "language": language,
                 "model_type": "qwen",
                 "model_size": "1.7B"
             }
@@ -140,37 +147,30 @@ async def generate(interaction: discord.Interaction, text: str, profile_id: str,
                     )
                     embed.add_field(name="Text", value=text[:1024], inline=False)
                     embed.add_field(name="Profile ID", value=profile_id, inline=True)
-                    embed.add_field(name="Language", value=language, inline=True)
                     embed.set_footer(text=f"Duration: {data['duration']:.2f}s")
 
                     # Send message with emotion buttons
-                    view = EmotionButton(profile_id, text, language)
+                    view = EmotionButton(profile_id, text)
                     await interaction.followup.send(
                         embed=embed,
                         view=view
                     )
-
-                    # Play audio in voice channel
-                    audio_source = discord.FFmpegPCMAudio(f"{PUNSVC_API_URL}/audio/{data['id']}.wav")
-                    if not VOICE_CLIENT.is_playing():
-                        VOICE_CLIENT.play(audio_source)
                 else:
                     await interaction.followup.send(f"❌ Generation failed: {resp.status}")
     except Exception as e:
         await interaction.followup.send(f"❌ Error: {str(e)}")
 
 
-@bot.tree.command(name="disconnect", description="Disconnect the bot from the voice channel")
+@bot.tree.command(name="disconnect", description="Disconnect from the current voice profile")
 async def disconnect(interaction: discord.Interaction):
-    global VOICE_CLIENT
+    user_id = interaction.user.id
 
-    if not VOICE_CLIENT or not VOICE_CLIENT.is_connected():
-        await interaction.response.send_message("❌ Bot is not connected to a voice channel!", ephemeral=True)
+    if user_id not in connected_voices:
+        await interaction.response.send_message("❌ No voice profile connected!", ephemeral=True)
         return
 
-    await VOICE_CLIENT.disconnect()
-    VOICE_CLIENT = None
-    await interaction.response.send_message("✅ Disconnected from voice channel")
+    profile_id = connected_voices.pop(user_id)
+    await interaction.response.send_message(f"✅ Disconnected from voice profile (ID: {profile_id})")
 
 
 @bot.tree.command(name="voices", description="List all available voices")
