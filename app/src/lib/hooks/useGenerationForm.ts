@@ -14,6 +14,7 @@ const generationSchema = z.object({
   text: z.string().min(1, 'Text is required').max(5000),
   language: z.enum(LANGUAGE_CODES as [LanguageCode, ...LanguageCode[]]),
   seed: z.number().int().optional(),
+  modelType: z.enum(['qwen', 'chatterbox']).optional(),
   modelSize: z.enum(['1.7B', '0.6B']).optional(),
   instruct: z.string().max(500).optional(),
 });
@@ -45,6 +46,7 @@ export function useGenerationForm(options: UseGenerationFormOptions = {}) {
       text: '',
       language: 'en',
       seed: undefined,
+      modelType: 'qwen',
       modelSize: '1.7B',
       instruct: '',
       ...options.defaultValues,
@@ -67,8 +69,17 @@ export function useGenerationForm(options: UseGenerationFormOptions = {}) {
     try {
       setIsGenerating(true);
 
-      const modelName = `qwen-tts-${data.modelSize}`;
-      const displayName = data.modelSize === '1.7B' ? 'Qwen TTS 1.7B' : 'Qwen TTS 0.6B';
+      const modelType = data.modelType || 'qwen';
+      let modelName: string;
+      let displayName: string;
+
+      if (modelType === 'chatterbox') {
+        modelName = 'chatterbox-turbo';
+        displayName = 'Chatterbox Turbo (350M)';
+      } else {
+        modelName = `qwen-tts-${data.modelSize}`;
+        displayName = data.modelSize === '1.7B' ? 'Qwen TTS 1.7B' : 'Qwen TTS 0.6B';
+      }
 
       try {
         const modelStatus = await apiClient.getModelStatus();
@@ -87,6 +98,7 @@ export function useGenerationForm(options: UseGenerationFormOptions = {}) {
         text: data.text,
         language: data.language,
         seed: data.seed,
+        model_type: modelType,
         model_size: data.modelSize,
         instruct: data.instruct || undefined,
       });
