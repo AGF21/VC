@@ -17,7 +17,7 @@ intents.voice_states = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Configuration
-PUNSVC_API_URL = "http://localhost:8000"
+PUNSVC_API_URL = "http://localhost:17493"
 DISCORD_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 
 # Connected voice profile per user
