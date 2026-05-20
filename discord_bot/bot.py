@@ -56,11 +56,21 @@ class EmotionButton(discord.ui.View):
         if self.audio_id:
             await interaction.response.defer()
             try:
-                audio_url = f"{PUNSVC_API_URL}/audio/{self.audio_id}.wav"
-                await interaction.followup.send(
-                    content="📥 Here's your generated speech:",
-                    file=discord.File(audio_url, filename=f"speech_{self.audio_id}.wav")
-                )
+                audio_url = f"{PUNSVC_API_URL}/audio/{self.audio_id}"
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(audio_url) as resp:
+                        if resp.status == 200:
+                            audio_data = await resp.read()
+                            audio_file = discord.File(
+                                BytesIO(audio_data),
+                                filename=f"speech_{self.audio_id}.wav"
+                            )
+                            await interaction.followup.send(
+                                content="📥 Here's your generated speech:",
+                                file=audio_file
+                            )
+                        else:
+                            await interaction.followup.send(f"❌ Download failed: {resp.status}")
             except Exception as e:
                 await interaction.followup.send(f"❌ Download failed: {str(e)}")
         else:
@@ -69,7 +79,8 @@ class EmotionButton(discord.ui.View):
     @discord.ui.button(label="▶️ Play", style=discord.ButtonStyle.success)
     async def play_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.audio_id:
-            await interaction.response.send_message(f"🎵 **[Play audio in your player](file://{self.audio_id}.wav)**\n\nAudio URL: {PUNSVC_API_URL}/audio/{self.audio_id}.wav", ephemeral=True)
+            audio_url = f"{PUNSVC_API_URL}/audio/{self.audio_id}"
+            await interaction.response.send_message(f"🎵 Audio URL: {audio_url}", ephemeral=True)
         else:
             await interaction.response.send_message("❌ No audio available to play", ephemeral=True)
 
@@ -199,7 +210,7 @@ async def generate(interaction: discord.Interaction, text: str):
 
                     # Download and send audio file
                     view = EmotionButton(profile_id, text, data['id'])
-                    audio_url = f"{PUNSVC_API_URL}/audio/{data['id']}.wav"
+                    audio_url = f"{PUNSVC_API_URL}/audio/{data['id']}"
                     try:
                         async with aiohttp.ClientSession() as audio_session:
                             async with audio_session.get(audio_url) as audio_resp:
